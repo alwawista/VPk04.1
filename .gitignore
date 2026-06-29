@@ -10,8 +10,10 @@ spool/*.jsonl
 .coverage
 htmlcov/
 
-# локальные записи демо-видео (сценарий — в DEMO_VIDEO.md)
+# локальные записи и личные заметки (не в git)
 demo-video/
+SECURITY.md
+DEMO_VIDEO.md
 *.mp4
 *.webm
 *.mov

@@ -180,8 +180,6 @@ sqlite3 .\data\triage.db "SELECT id, created_at, client_id, channel, category, c
 - **Температура LLM:** `LLM_TEMPERATURE=0.2` (меньше «фантазии»)
 - **Опциональная авторизация:** `REQUIRE_API_AUTH=true` + `Authorization: Bearer <API_KEYS>`
 
-Подробнее: [SECURITY.md](SECURITY.md)
-
 ## Тесты
 
 ```powershell
