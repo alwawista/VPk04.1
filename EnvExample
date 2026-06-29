@@ -1,0 +1,36 @@
+# Скопируйте в .env и заполните значения
+
+# Опционально: Bearer-авторизация (false — по умолчанию, как в задании)
+REQUIRE_API_AUTH=false
+API_KEYS=demo-key
+
+DATABASE_URL=sqlite:///./data/triage.db
+REDIS_URL=
+
+# mock — демо без внешних API
+# openai — OpenAI или ProxyAPI (OpenAI-совместимый шлюз)
+# anthropic — Anthropic или ProxyAPI (нативный Anthropic API)
+LLM_PROVIDER=mock
+LLM_API_KEY=
+
+# Пусто — прямой доступ к провайдеру (api.openai.com / api.anthropic.com)
+# ProxyAPI (OpenAI-совместимый): https://openai.api.proxyapi.ru/v1
+# ProxyAPI (нативный OpenAI):     https://api.proxyapi.ru/openai/v1
+# ProxyAPI (нативный Anthropic):  https://api.proxyapi.ru/anthropic
+LLM_BASE_URL=
+
+# Для ProxyAPI OpenAI-совместимого API: openai/gpt-4o-mini
+# Для прямого OpenAI: gpt-4o-mini
+LLM_MODEL=gpt-4o-mini
+LLM_TEMPERATURE=0.2
+LLM_TIMEOUT_SECONDS=15
+LLM_DAILY_BUDGET_USD=5
+
+MAX_REQUEST_BODY_BYTES=8192
+RATE_LIMIT_CLIENT_PER_MINUTE=10
+RATE_LIMIT_IP_PER_MINUTE=30
+RATE_LIMIT_API_KEY_PER_MINUTE=60
+RATE_LIMIT_GLOBAL_PER_MINUTE=300
+
+SPOOL_PATH=./spool/emergency.jsonl
+ENVIRONMENT=development

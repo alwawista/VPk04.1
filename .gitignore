@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+*.egg-info/
+.env
+data/*.db
+data/*.db-*
+spool/*.jsonl
+.coverage
+htmlcov/
+
+# локальные записи демо-видео (сценарий — в DEMO_VIDEO.md)
+demo-video/
+*.mp4
+*.webm
+*.mov
