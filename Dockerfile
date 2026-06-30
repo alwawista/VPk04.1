@@ -8,10 +8,12 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 COPY pyproject.toml ./
 COPY app ./app
 COPY static ./static
+COPY scripts ./scripts
+COPY data/samples ./data/samples
 
 RUN pip install --no-cache-dir -e .
 
-RUN mkdir -p /app/data /app/spool
+RUN mkdir -p /app/data /app/spool /app/reports
 
 EXPOSE 8000
 

@@ -10,6 +10,9 @@ spool/*.jsonl
 .coverage
 htmlcov/
 
+# отчёты для сдачи (генерируются локально)
+reports/
+
 # локальные записи и личные заметки (не в git)
 demo-video/
 SECURITY.md

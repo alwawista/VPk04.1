@@ -108,14 +108,89 @@ docker compose up --build
 
 ## Деплой на VPS (okihit.online)
 
+Сервер: `95.81.115.164` · домен: **https://okihit.online** · каталог на VPS: `/opt/triage`
+
+### Первый запуск (с нуля)
+
+**1. DNS** (у регистратора):
+
+- `okihit.online` → A → `95.81.115.164`
+- `www.okihit.online` → A → `95.81.115.164`
+
+**2. На VPS (SSH):**
+
 ```bash
-# На сервере в /opt/triage
+sudo apt-get update
+sudo apt-get install -y git
+
+sudo mkdir -p /opt/triage
+sudo git clone https://github.com/alwawista/VPk04.1.git /opt/triage
+cd /opt/triage
+
+cp EnvExample .env
+nano .env   # для демо: LLM_PROVIDER=mock
+```
+
+**3. Установка nginx + Docker + HTTPS:**
+
+```bash
+sudo CERTBOT_EMAIL=your@email.com bash deploy/install-on-server.sh
+# или без SSL сразу:
 sudo bash deploy/install-on-server.sh
-# или для HTTPS после настройки DNS:
 sudo bash deploy/setup-https.sh
 ```
 
-Используется `docker-compose.prod.yml` (порт `127.0.0.1:8001`) + nginx reverse proxy.
+**4. Импорт 60 примеров + экспорт лога (как локально):**
+
+```bash
+sudo bash deploy/post_deploy.sh
+```
+
+Скрипт внутри контейнера:
+
+- `seed_from_csv.py --clear` → 60 записей в SQLite
+- `export_response_log.py` → файлы в `/opt/triage/reports/`
+
+**5. Проверка в браузере:**
+
+| Что | URL |
+|-----|-----|
+| Демо UI | https://okihit.online/ |
+| Health | https://okihit.online/health |
+| Swagger | https://okihit.online/docs |
+| Тикеты JSON | https://okihit.online/tickets?limit=60 |
+
+### Обновление после `git push`
+
+На VPS:
+
+```bash
+sudo bash /opt/triage/deploy/update_from_git.sh
+```
+
+Или вручную:
+
+```bash
+cd /opt/triage
+git pull
+sudo bash deploy/post_deploy.sh
+```
+
+### Скачать лог откликов с VPS на ПК
+
+```powershell
+scp user@95.81.115.164:/opt/triage/reports/response_log.csv .
+scp user@95.81.115.164:/opt/triage/reports/response_log.html .
+```
+
+### Логи Docker на сервере
+
+```bash
+cd /opt/triage
+docker compose -f docker-compose.prod.yml logs -f --tail=50
+```
+
+Используется `docker-compose.prod.yml` (порт `127.0.0.1:8001` → nginx → `okihit.online`).
 
 ## Где смотреть SQLite и логи
 
@@ -143,6 +218,81 @@ sqlite3 .\data\triage.db "SELECT id, created_at, client_id, channel, category, c
 **Emergency spool** (если SQLite недоступен): `./spool/emergency.jsonl`
 
 **Логи uvicorn** — в консоли, где запущен сервер.
+
+### Импорт 60 примеров в историю (демо UI)
+
+В репозитории есть `data/samples/tickets_60.csv` — готовые обращения с категориями и черновиками.
+
+```powershell
+python scripts/seed_from_csv.py --clear
+```
+
+- `--clear` — очистить таблицу перед импортом (без флага строки добавляются к существующим)
+- `--csv путь\к\файлу.csv` — другой файл
+
+После импорта откройте http://127.0.0.1:8000/ — в блоке «История обращений» появятся записи (API `GET /tickets` возвращает последние 10; увеличьте `?limit=60` при необходимости).
+
+## Сдача: лог откликов (таблица + скрины / ссылки)
+
+### 1. Подготовить таблицу
+
+Убедитесь, что в БД есть записи (импорт или живые `POST /triage`):
+
+```powershell
+python scripts/seed_from_csv.py --clear
+# или отправьте несколько запросов в /triage — они тоже пишутся в tickets
+```
+
+Экспорт для отчёта:
+
+```powershell
+python scripts/export_response_log.py
+```
+
+Создаёт в папке `reports/`:
+
+| Файл | Для чего |
+|------|----------|
+| `response_log.csv` | Excel / Google Sheets, приложение к работе |
+| `response_log.html` | открыть в браузере → **скрин всей таблицы** |
+| `response_log.md` | вставить в документ или конвертировать в PDF |
+
+Колонки: `id`, `created_at`, `client_id`, `channel`, `text`, `category`, `confidence`, `escalate`, `draft_reply`, `error`.
+
+### 2. Скриншоты (минимум 4)
+
+| № | Что снять | Зачем |
+|---|-----------|--------|
+| 1 | `reports/response_log.html` или Excel с `response_log.csv` | **таблица лога** |
+| 2 | https://okihit.online/ — форма + результат | запрос → ответ в UI |
+| 3 | https://okihit.online/docs → POST `/triage` | JSON-контракт |
+| 4 | `docker compose logs` на VPS или `reports/response_log.html` | технический лог / таблица |
+
+### 3. Ссылки для отчёта
+
+**Публичный деплой (okihit.online):**
+
+| Объект | URL |
+|--------|-----|
+| Репозиторий | https://github.com/alwawista/VPk04.1 |
+| Демо UI | https://okihit.online/ |
+| Swagger | https://okihit.online/docs |
+| Health | https://okihit.online/health |
+| Тикеты JSON | https://okihit.online/tickets?limit=60 |
+
+**Локально (разработка):**
+
+| Объект | URL |
+|--------|-----|
+| Демо UI | http://127.0.0.1:8000/ |
+| Swagger | http://127.0.0.1:8000/docs |
+| Health | http://127.0.0.1:8000/health |
+
+Таблица лога: `reports/response_log.csv` / `.html` (локально или `/opt/triage/reports/` на VPS).
+
+### 4. Пример текста для пояснительной записки
+
+> Лог откликов хранится в SQLite (`tickets`). Каждый `POST /triage` сохраняет вход (text, channel, client_id) и ответ (category, draft_reply, confidence, escalate). Экспорт: `python scripts/export_response_log.py`. Приложены таблица (CSV/HTML) и скриншоты UI, Swagger и логов uvicorn.
 
 ## Контракт API
 

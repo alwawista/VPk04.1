@@ -60,6 +60,11 @@ systemctl restart nginx
 cd "${APP_DIR}"
 docker compose -f docker-compose.prod.yml up -d --build
 
+echo ""
+echo "=== Импорт примеров и экспорт лога (опционально) ==="
+echo "  sudo bash ${APP_DIR}/deploy/post_deploy.sh"
+echo ""
+
 if [[ -n "${EMAIL}" ]]; then
   certbot --nginx -d "${DOMAIN}" -d "www.${DOMAIN}" --non-interactive --agree-tos -m "${EMAIL}" --redirect
   systemctl reload nginx

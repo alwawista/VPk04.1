@@ -8,4 +8,5 @@ services:
     volumes:
       - ./data:/app/data
       - ./spool:/app/spool
+      - ./reports:/app/reports
     restart: unless-stopped
